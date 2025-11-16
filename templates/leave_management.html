@@ -1,0 +1,41 @@
+{% extends "layout.html" %}
+{% block content %}
+<section class="space-y-6 animate-fadeIn">
+    <header>
+        <h1 class="text-3xl font-bold text-slate-900">Student Leave Log</h1> <p class="text-slate-500">Review student leave logs.</p>
+    </header>
+    
+    <div class="bg-white rounded-2xl shadow-lg overflow-hidden border border-slate-200">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-slate-200">
+                <thead class="bg-slate-100">
+                    <tr>
+                        <th class="table-head">Student Name</th>
+                        <th class="table-head">Roll No</th>
+                        <th class="table-head">Leave Date</th>
+                        <th class="table-head">Return Date</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200">
+                    {% for leave_req, student_name in requests %}
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="table-cell">{{ student_name }}</td>
+                        <td class="table-cell">{{ leave_req.student }}</td> <td class="table-cell">{{ leave_req.leave_date.strftime('%Y-%m-%d') }}</td> <td class="table-cell">{{ leave_req.return_date.strftime('%Y-%m-%d') }}</td> </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center py-6 text-slate-500"> No leave logs found.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+<style>
+.table-head { @apply px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-600; }
+.table-cell { @apply px-6 py-4 whitespace-nowrap text-sm text-slate-700; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.animate-fadeIn { animation: fadeIn 0.5s ease-out both; }
+</style>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<header class="mb-8">
+    <h1 class="text-3xl font-bold leading-tight text-gray-900">
+        Admin Dashboard
+    </h1>
+    <p class="mt-2 text-md text-gray-600">Welcome, {{ session.username }}!</p>
+</header>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="mb-6 space-y-2">
+    {% for category, message in messages %}
+      <div class="p-4 rounded-md {% if category == 'success' %}bg-green-100 border border-green-300 text-green-800{% elif category == 'danger' %}bg-red-100 border border-red-300 text-red-800{% else %}bg-blue-100 border border-blue-300 text-blue-800{% endif %}">
+        {{ message }}
+      </div>
+    {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    
+    <div class="bg-indigo-600 text-white p-6 rounded-lg shadow-lg">
+        <h4 class="text-lg font-medium text-indigo-100">Total Students</h4>
+        <h2 class="text-4xl font-bold mt-2">{{ stats.total_students }}</h2>
+    </div>
+    
+    <div class="bg-green-600 text-white p-6 rounded-lg shadow-lg">
+        <h4 class="text-lg font-medium text-green-100">Rooms Available</h4>
+        <h2 class="text-4xl font-bold mt-2">{{ stats.rooms_available }}</h2>
+    </div>
+    
+    <div class="bg-yellow-500 text-white p-6 rounded-lg shadow-lg">
+        <h4 class="text-lg font-medium text-yellow-100">Rooms Occupied</h4>
+        <h2 class="text-4xl font-bold mt-2">{{ stats.rooms_occupied }}</h2>
+    </div>
+    
+    <div class="bg-red-600 text-white p-6 rounded-lg shadow-lg">
+        <h4 class="text-lg font-medium text-red-100">Pending Complaints</h4>
+        <h2 class="text-4xl font-bold mt-2">{{ stats.pending_complaints }}</h2>
+    </div>
+</div>
+
+<div class="mt-10 flex justify-center gap-6">
+    <a href="{{ url_for('list_students') }}" 
+       class="px-8 py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 transition-colors">
+        Manage Students
+    </a>
+    <a href="{{ url_for('list_rooms') }}" 
+       class="px-8 py-3 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 transition-colors">
+        Manage Rooms
+    </a>
+</div>
+
+{% endblock %}

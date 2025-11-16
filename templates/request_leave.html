@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+{% block content %}
+<section class="space-y-6 animate-fadeIn">
+    <header class="mb-6">
+        <h1 class="text-3xl font-bold text-slate-900">Log Leave</h1> <p class="text-slate-500">Please fill out the form to log your leave from the hostel.</p>
+    </header>
+    <div class="bg-white p-8 rounded-2xl shadow-lg border border-slate-200">
+        <form action="{{ url_for('request_leave') }}" method="POST">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="leave_date" class="block text-sm font-medium text-slate-700">Leave Date</label>
+                    <input type="date" id="leave_date" name="leave_date" required class="input-field">
+                </div>
+                <div>
+                    <label for="return_date" class="block text-sm font-medium text-slate-700">Return Date</label>
+                    <input type="date" id="return_date" name="return_date" required class="input-field">
+                </div>
+                <div class="md:col-span-2 flex justify-end">
+                    <button type="submit"
+                            class="px-6 py-3 rounded-lg bg-indigo-600 text-white font-semibold hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 transition-all duration-200">
+                        Submit Log
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+<style>
+.input-field { @apply mt-1 block w-full px-4 py-2 border border-slate-300 rounded-lg shadow-sm bg-slate-100 text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.animate-fadeIn { animation: fadeIn 0.5s ease-out both; }
+</style>
+{% endblock %}

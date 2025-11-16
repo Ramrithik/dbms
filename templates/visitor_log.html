@@ -1,0 +1,71 @@
+{% extends "layout.html" %}
+{% block content %}
+<section class="space-y-10 animate-fadeIn">
+    <header>
+        <h1 class="text-3xl font-bold text-slate-900">Visitor Log Management</h1>
+        <p class="text-slate-500">Log new visitors and see who is on campus.</p>
+    </header>
+
+    <div class="bg-white p-8 rounded-2xl shadow-lg border border-slate-200">
+        <h2 class="text-2xl font-semibold text-slate-800 mb-6">Log a New Visitor</h2>
+        
+        <form action="{{ url_for('visitor_log_management') }}" method="POST" class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+                <label for="student_id" class="block text-sm font-medium text-slate-700">Student to Visit</label>
+                <select id="student_id" name="student_id" required class="input-field">
+                    <option value="" disabled selected>Select a student</option>
+                    {% for student in students %}
+                        <option value="{{ student.Roll_no }}">{{ student.name }} ({{ student.Roll_no }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="visitor_name" class="block text-sm font-medium text-slate-700">Visitor's Name</label>
+                <input type="text" id="visitor_name" name="visitor_name" required
+                       class="input-field" placeholder="e.g. Jane Doe">
+            </div>
+            <div class="sm:col-span-2 flex justify-end">
+                <button type="submit"
+                        class="px-6 py-3 rounded-lg bg-indigo-600 text-white font-semibold hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 transition-all duration-200">
+                    Log Visitor
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-lg overflow-hidden border border-slate-200">
+        <div class="flex items-center justify-between px-6 py-4 bg-slate-50">
+            <h2 class="text-xl font-semibold text-slate-800">Visitor Log</h2>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-slate-200">
+                <thead class="bg-slate-100">
+                    <tr>
+                        <th class="table-head">Visitor Name</th>
+                        <th class="table-head">Student Visited</th>
+                        <th class="table-head">Date</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200">
+                    {% for visit, student_name in visits %}
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="table-cell">{{ visit.visitor }}</td> <td class="table-cell">{{ student_name }} ({{ visit.student }})</td> <td class="table-cell">{{ visit.date.strftime('%Y-%m-%d') }}</td> </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="3" class="text-center py-6 text-slate-500"> No visitor logs found.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+<style>
+.input-field { @apply mt-1 block w-full px-4 py-2 border border-slate-300 rounded-lg shadow-sm bg-slate-100 text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition; }
+.table-head { @apply px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-600; }
+.table-cell { @apply px-6 py-4 whitespace-nowrap text-sm text-slate-700; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.animate-fadeIn { animation: fadeIn 0.5s ease-out both; }
+</style>
+{% endblock %}

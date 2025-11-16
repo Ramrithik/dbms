@@ -1,0 +1,114 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<section class="space-y-10 animate-fadeIn">
+    <header>
+        <h1 class="text-3xl font-bold text-slate-900">Maintenance Log</h1>
+        <p class="text-slate-500">Log new maintenance jobs and track their status.</p>
+    </header>
+
+    <div class="bg-white p-8 rounded-2xl shadow-lg border border-slate-200">
+        <h2 class="text-2xl font-semibold text-slate-800 mb-6">Log New Job</h2>
+        
+        <form action="{{ url_for('maintenance_log') }}" method="POST" class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+                <label for="room_id" class="block text-sm font-medium text-slate-700">Room (Optional)</label>
+                <select id="room_id" name="room_id" class="input-field">
+                    <option value="" selected>Select a room</option>
+                    {% for room in rooms %}
+                        <option value="{{ room.id }}">Room {{ room.id }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div>
+                <label for="student_id" class="block text-sm font-medium text-slate-700">Student (Optional)</label>
+                <select id="student_id" name="student_id" class="input-field">
+                    <option value="" selected>Select a student</option>
+                    {% for student in students %}
+                        <option value="{{ student.Roll_no }}">{{ student.name }} ({{ student.Roll_no }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="sm:col-span-2">
+                <label for="issue" class="block text-sm font-medium text-slate-700">Issue Description</label>
+                <textarea id="issue" name="issue" rows="3" required 
+                          class="input-field" 
+                          placeholder="e.g. Room 101, fan not working."></textarea>
+            </div>
+
+            <div class="sm:col-span-2 flex justify-end">
+                <button type="submit"
+                        class="px-6 py-3 rounded-lg bg-indigo-600 text-white font-semibold hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 transition-all duration-200">
+                    Log Maintenance Job
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-lg overflow-hidden border border-slate-200">
+        <div class="flex items-center justify-between px-6 py-4 bg-slate-50">
+            <h2 class="text-xl font-semibold text-slate-800">Job History</h2>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-slate-200">
+                <thead class="bg-slate-100">
+                    <tr>
+                        <th class="table-head">Job ID</th>
+                        <th class="table-head">Room</th>
+                        <th class="table-head">Student</th>
+                        <th class="table-head">Issue</th>
+                        <th class="table-head">Date Raised</th>
+                        <th class="table-head">Status</th>
+                        <th class="table-head text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200">
+                    {% for log, student_name, room_num in logs %}
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="table-cell">{{ log.id }}</td>
+                        <td class="table-cell">{{ "Room " + room_num|string if room_num else 'N/A' }}</td>
+                        <td class="table-cell">{{ student_name or 'N/A' }}</td>
+                        <td class="table-cell max-w-sm">
+                           <p class="truncate" title="{{ log.issue }}">{{ log.issue }}</p>
+                        </td>
+                        <td class="table-cell">{{ log.request_date.strftime('%Y-%m-%d') }}</td>
+                        <td class="table-cell">
+                            {% if log.status == False %}
+                                <span class="status-badge bg-yellow-100 text-yellow-800">Pending</span>
+                            {% else %}
+                                <span class="status-badge bg-green-100 text-green-800">Completed</span>
+                            {% endif %}
+                        </td>
+                        <td class="table-cell text-right">
+                            {% if log.status == False %}
+                                <a href="{{ url_for('resolve_maintenance', maint_id=log.id) }}" class="text-indigo-600 hover:text-indigo-800 font-medium">
+                                    Mark as Complete
+                                </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center py-6 text-slate-500">
+                            No maintenance logs found.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<style>
+.input-field { @apply mt-1 block w-full px-4 py-2 border border-slate-300 rounded-lg shadow-sm bg-slate-100 text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition; }
+.table-head { @apply px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-600; }
+.table-cell { @apply px-6 py-4 whitespace-nowrap text-sm text-slate-700; }
+.table-cell p.truncate { max-width: 20rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.status-badge { @apply px-2 py-1 text-xs font-semibold rounded-full; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.animate-fadeIn { animation: fadeIn 0.5s ease-out both; }
+</style>
+{% endblock %}
