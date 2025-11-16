@@ -8,8 +8,6 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'd04a41a8f065fdd8b6663a0ec60b865512d9bbab845b63a0'
 db.init_app(app)
 
-# --- LOGIN & CORE ROUTES ---
-
 @app.route('/')
 def index():
     if 'role' not in session:
@@ -51,8 +49,6 @@ def logout():
     session.clear()
     flash('You have been logged out.', 'info')
     return redirect(url_for('login'))
-
-# --- STUDENT DASHBOARD & ACTIONS ---
 
 @app.route('/student_dashboard')
 def student_dashboard():
@@ -181,7 +177,6 @@ def my_complaints():
     complaints = Complaint.query.filter_by(student_id=roll_no).order_by(Complaint.complaint_date.desc()).all()
     return render_template('my_complaints.html', complaints=complaints)
 
-# --- STUDENT PAYMENT ROUTES (FIXED) ---
 @app.route('/my_payments')
 def my_payments():
     if session.get('role') != 'student':
@@ -191,7 +186,6 @@ def my_payments():
     roll_no = session.get('username')
     
     try:
-        # FIXED: Use 'student' to filter, not 'student_id'
         payments = Payment.query.filter_by(student=roll_no).order_by(Payment.date.desc()).all()
         total_paid = sum(payment.amount for payment in payments)
     except Exception as e:
@@ -201,7 +195,6 @@ def my_payments():
 
     return render_template('my_payments.html', payments=payments, total_paid=total_paid)
 
-# --- STUDENT LEAVE ROUTES (FIXED) ---
 @app.route('/my_leave_requests')
 def my_leave_requests():
     if session.get('role') != 'student':
@@ -210,7 +203,6 @@ def my_leave_requests():
 
     roll_no = session.get('username')
     try:
-        # FIXED: Use 'student' and 'leave_date'
         requests = LeaveLog.query.filter_by(student=roll_no).order_by(LeaveLog.leave_date.desc()).all()
     except Exception as e:
         flash(f'Error loading leave requests: {e}', 'danger')
@@ -226,7 +218,6 @@ def request_leave():
 
     if request.method == 'POST':
         try:
-            # FIXED: Changed names to match form
             start_date_str = request.form['leave_date']
             end_date_str = request.form['return_date']
             roll_no = session.get('username')
@@ -237,8 +228,6 @@ def request_leave():
             if end_date < start_date:
                 flash('Return date cannot be before leave date.', 'danger')
                 return render_template('request_leave.html')
-
-            # FIXED: Create object matching model (no 'reason' or 'status')
             new_leave = LeaveLog(
                 student=roll_no,
                 leave_date=start_date,
@@ -256,7 +245,6 @@ def request_leave():
     return render_template('request_leave.html')
 
 
-# --- ADMIN DASHBOARD ---
 @app.route('/admin_dashboard')
 def admin_dashboard():
     if session.get('role') != 'admin':
@@ -276,7 +264,7 @@ def admin_dashboard():
 
     return render_template('admin_dashboard.html', stats=stats)
 
-# --- ADMIN STUDENT ROUTES ---
+
 @app.route('/students')
 def list_students():
     if session.get('role') != 'admin':
@@ -353,8 +341,7 @@ def delete_student(roll_no):
             if room:
                 room.status = True  
             db.session.delete(allocation)
-        
-        # Delete related records
+            
         Complaint.query.filter_by(student_id=roll_no).delete(synchronize_session=False)
         Maintainence.query.filter_by(student=roll_no).delete(synchronize_session=False)
         Payment.query.filter_by(student=roll_no).delete(synchronize_session=False)
@@ -371,7 +358,6 @@ def delete_student(roll_no):
 
     return redirect(url_for('list_students'))
 
-# --- ADMIN ROOM ROUTES ---
 @app.route('/rooms')
 def list_rooms():
     if session.get('role') != 'admin':
@@ -423,7 +409,8 @@ def delete_room(room_id):
 
     return redirect(url_for('list_rooms'))
 
-# --- ADMIN COMPLAINT ROUTES ---
+
+
 @app.route('/admin/complaints')
 def view_complaints():
     if session.get('role') != 'admin':
@@ -447,7 +434,7 @@ def resolve_complaint(complaint_id):
     try:
         complaint = Complaint.query.get(complaint_id)
         if complaint:
-            complaint.status = True  # Set status to 'Resolved'
+            complaint.status = True 
             db.session.commit()
             flash(f'Complaint {complaint_id} marked as resolved.', 'success')
         else:
@@ -459,8 +446,7 @@ def resolve_complaint(complaint_id):
 
     return redirect(url_for('view_complaints'))
 
-# --- ADMIN PAYMENT ROUTES (FIXED) ---
-# In app.py
+
 
 @app.route('/admin/payments')
 def payment_management():
@@ -482,18 +468,12 @@ def payment_management():
         students = []
         payments = []
 
-    # === ADD THIS LINE ===
-    # Get today's date in YYYY-MM-DD format
     today_str = datetime.now().strftime('%Y-%m-%d')
-    # === END ADD ===
-
-    # === UPDATE THIS LINE ===
-    # Pass the 'today' variable to the template
     return render_template(
         'payment_management.html', 
         students=students, 
         payments=payments, 
-        today=today_str  # <-- Pass it here
+        today=today_str 
     )
 
 @app.route('/admin/payments/add', methods=['POST'])
@@ -507,13 +487,11 @@ def add_payment():
         amount = request.form['amount']
         payment_date_str = request.form['payment_date']
         payment_date = datetime.strptime(payment_date_str, '%Y-%m-%d').date()
-
-        # FIXED: Create object matching model
         new_payment = Payment(
             student=roll_no,
             amount=amount,
             date=payment_date,
-            status=True  # Admin is logging a paid fee
+            status=True  
         )
         db.session.add(new_payment)
         db.session.commit()
@@ -525,7 +503,6 @@ def add_payment():
 
     return redirect(url_for('payment_management'))
 
-# --- ADMIN VISITOR ROUTES (FIXED) ---
 @app.route('/admin/visitors', methods=['GET', 'POST'])
 def visitor_log_management():
     if session.get('role') != 'admin':
@@ -537,7 +514,7 @@ def visitor_log_management():
             student_id = request.form['student_id']
             visitor_name = request.form['visitor_name']
 
-            # FIXED: Create object matching model (no phone, no visit_in)
+
             new_visit = VisitLog(
                 student=student_id,
                 visitor=visitor_name,
@@ -553,10 +530,8 @@ def visitor_log_management():
         
         return redirect(url_for('visitor_log_management'))
 
-    # GET request: Show the page
     try:
         students = Student.query.all()
-        # FIXED: Join on 'VisitLog.student'
         visits = db.session.query(
             VisitLog, Student.name
         ).join(
@@ -569,10 +544,6 @@ def visitor_log_management():
         visits = []
 
     return render_template('visitor_log.html', students=students, visits=visits)
-
-# FIXED: Removed 'visitor_checkout' route as model does not support 'visit_out'
-
-# --- ADMIN LEAVE ROUTES (FIXED) ---
 @app.route('/admin/leave_management')
 def leave_management():
     if session.get('role') != 'admin':
@@ -580,7 +551,7 @@ def leave_management():
         return redirect(url_for('index'))
     
     try:
-        # FIXED: Join on 'LeaveLog.student'
+     
         requests = db.session.query(
             LeaveLog, Student.name
         ).join(
@@ -593,10 +564,6 @@ def leave_management():
 
     return render_template('leave_management.html', requests=requests)
 
-# FIXED: Removed 'leave_action' route as model does not support 'status'
-
-
-# --- ⭐️ NEW FEATURE: MAINTENANCE LOG ⭐️ ---
 
 @app.route('/admin/maintenance', methods=['GET', 'POST'])
 def maintenance_log():
@@ -607,10 +574,9 @@ def maintenance_log():
     if request.method == 'POST':
         try:
             room_id = request.form.get('room_id')
-            student_id = request.form.get('student_id') # Can be optional
+            student_id = request.form.get('student_id') 
             issue = request.form['issue']
             
-            # Ensure at least one is selected
             if not room_id and not student_id:
                 flash('Please select either a Room or a Student.', 'danger')
                 return redirect(url_for('maintenance_log'))
@@ -619,7 +585,7 @@ def maintenance_log():
                 room_id=room_id if room_id else None,
                 student=student_id if student_id else None,
                 issue=issue,
-                status=False, # Default to 'Pending'
+                status=False, 
                 request_date=datetime.now().date()
             )
             db.session.add(new_maint)
@@ -632,12 +598,10 @@ def maintenance_log():
         
         return redirect(url_for('maintenance_log'))
 
-    # GET request
     try:
         students = Student.query.all()
         rooms = Room.query.all()
-        
-        # Query to get all logs, join with student and room
+      
         logs = db.session.query(
             Maintainence, 
             Student.name, 
@@ -666,7 +630,7 @@ def resolve_maintenance(maint_id):
     try:
         maint_request = Maintainence.query.get(maint_id)
         if maint_request:
-            maint_request.status = True  # Set status to 'Completed'
+            maint_request.status = True 
             db.session.commit()
             flash(f'Maintenance request {maint_id} marked as completed.', 'success')
         else:
@@ -679,7 +643,7 @@ def resolve_maintenance(maint_id):
     return redirect(url_for('maintenance_log'))
 
 
-# --- MAIN ---
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
